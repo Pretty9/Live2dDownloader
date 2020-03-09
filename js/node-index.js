@@ -1,7 +1,6 @@
 const JSZip = require("jszip");
 const fs = require("fs");
 const fetch = require("node-fetch");
-//const args = require('minimist')(process.argv.slice(2));
 
 
 class Live2dDownloader {
