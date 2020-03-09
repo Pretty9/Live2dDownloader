@@ -6,12 +6,13 @@ const fetch = require("node-fetch");
 class Live2dDownloader {
     constructor() {
         this.zip = new JSZip();
+        this.userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1";
     }
 
     readJson(url, fileName) {
         return (async () => {
             try {
-                const res = await fetch(url);
+                const res = await fetch(url, {headers: {'Referer': url, 'User-Agent': this.userAgent} });
                 return { fileName: fileName, data: await res.json() };
             }catch(err){
                 console.log(fileName, ' / download error.', err);
@@ -22,7 +23,7 @@ class Live2dDownloader {
     readBytes(url, fileName) {
         return (async () => {
             try {
-                const res = await fetch(url);
+                const res = await fetch(url, {headers: {'Referer': url, 'User-Agent': this.userAgent} });
                 return { fileName: fileName, data: await res.arrayBuffer() };
             }catch(err){
                 console.log(fileName, ' / download error.', err);
@@ -32,10 +33,8 @@ class Live2dDownloader {
 
     saveModelAssets(results) {
         results.forEach(element => {
-
-            let cur = element['fileName'].indexOf('http://') + element['fileName'].indexOf('https://');
             let fileName = element['fileName'];
-            if (cur > -2) {
+            if (fileName.startsWith('https://') || fileName.startsWith('http://') || fileName.startsWith('//')) {
                 fileName = element['fileName'].substr(element['fileName'].lastIndexOf('/') + 1);
             }
 
@@ -59,37 +58,46 @@ class Live2dDownloader {
         })
     }
 
+    makeUrl(baseUrl, url) {
+        if(url.startsWith('https://') || url.startsWith('http://')) {
+            return url;
+        }else if(url.startsWith('//')) {
+            return 'http:' + url; // 或者https
+        }
+        return baseUrl + url;
+    }
+    
     getModelAssets(modelJson) {
         this.modelJson = modelJson;
         
         let promises = new Array();
-        promises.push(this.readBytes(this.baseUrl + modelJson.model, modelJson.model));
+        promises.push(this.readBytes(this.makeUrl(this.baseUrl, modelJson.model), modelJson.model));
         if (modelJson.physics != undefined) {
-            promises.push(this.readBytes(this.baseUrl + modelJson.physics, modelJson.physics));
+            promises.push(this.readBytes(this.makeUrl(this.baseUrl, modelJson.physics), modelJson.physics));
         }
 
         if (modelJson.textures != undefined) {
             modelJson.textures.forEach(element => {
-                promises.push(this.readBytes(this.baseUrl + element, element));
+                promises.push(this.readBytes(this.makeUrl(this.baseUrl, element), element));
             });
         }
 
         if (modelJson.pose != undefined) {
-            promises.push(this.readBytes(this.baseUrl + modelJson.pose, modelJson.pose));
+            promises.push(this.readBytes(this.makeUrl(this.baseUrl, modelJson.pose), modelJson.pose));
         }
 
         if (modelJson.expressions != undefined) {
             modelJson.expressions.forEach(element => {
-                promises.push(this.readBytes(this.baseUrl + element['file'], element['file']));
+                promises.push(this.readBytes(this.makeUrl(this.baseUrl, element['file']), element['file']));
             });
         }
 
         if (modelJson.motions != undefined) {
             for (let key in modelJson.motions) {
                 modelJson.motions[key].forEach(element => {
-                    promises.push(this.readBytes(this.baseUrl + element['file'], element['file']));
+                    promises.push(this.readBytes(this.makeUrl(this.baseUrl, element['file']), element['file']));
                     if (element['sound'] != undefined && element['sound'].length > 0) {
-                        promises.push(this.readBytes(this.baseUrl + element['sound'], element['sound']));
+                        promises.push(this.readBytes(this.makeUrl(this.baseUrl,element['sound']), element['sound']));
                     }
                 });
             }
