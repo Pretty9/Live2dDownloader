@@ -12,14 +12,13 @@
         <input id="model-url" type="text">
         <input type="button" onclick="loadModel()" value="LOAD MODEL">
         <input id="download-model" type="button" onclick="downloadModel()" value="DOWNLOAD" style="display: none;">
-        <div id="tips">
-
-        </div>
+        <div id="tips"></div>
     </form>
     <script src="https://cdn.jsdelivr.net/npm/live2d-widget@3.x/lib/L2Dwidget.min.js"></script>
     <script src="https://cdn.bootcss.com/FileSaver.js/1.3.8/FileSaver.js"></script>
     <script src="https://cdn.bootcss.com/jszip/3.2.2/jszip.min.js"></script>
-    <script src="js/index.js"></script>
+    <!--<script src="js/index.js"></script>-->
+    <script src="https://cdn.jsdelivr.net/gh/Pretty9/Live2dDownloader@v1.0/js/index.js"></script>
     <script>
         //let url = 'https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.model.json';
         
@@ -51,7 +50,7 @@
                     "opacityOnHover": 0.2
                 }
             });
-            document.getElementById("tips").innerText = `请确定左下角模型显示正常后点击DOWNLOAD按钮，
+            document.getElementById("tips").innerText = `请确定右下角模型显示正常后点击DOWNLOAD按钮，
                                                          如未正常显示可能是跨域问题，请打开控制台查看详细信息`;
             document.getElementById("download-model").style.display="inline";
         }
@@ -70,9 +69,6 @@
                 console.log(err);
             }
         }
-    </script>
-    <script>
-
     </script>
 
 </body>
